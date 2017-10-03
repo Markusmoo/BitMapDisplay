@@ -5,6 +5,8 @@ import java.awt.*;
  */
 public interface Engine {
 
-    public void paint(Graphics g);
-    public void update();
+    int fps = 30;
+
+    void paint(Graphics g);
+    void update();
 }

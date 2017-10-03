@@ -1,3 +1,5 @@
+import com.google.gson.annotations.Expose;
+
 import java.awt.*;
 
 /**
@@ -5,14 +7,11 @@ import java.awt.*;
  */
 public class Tile implements Engine{
 
-    public static final int OPEN                                = 0;
-    public static final int BLOCK                               = 1;
+    public static final int OPEN = 0;
+    public static final int BLOCK = 1;
 
-    public static int width = 0;
-    public static int height = 0;
-
-    public int type = -1;
-    public int x, y;
+    @Expose public int type = -1;
+    @Expose public int x, y;
 
     public Tile(int x, int y, int type){
         this.x = x;
@@ -29,7 +28,7 @@ public class Tile implements Engine{
         if(type == BLOCK) {
             Color orgColor = g.getColor();
             g.setColor(Color.blue);
-            g.fillRect(x * width, y * height, width, height);
+            g.fillRect(x * Map.gridWidth, y * Map.gridHeight, Map.gridWidth, Map.gridHeight);
             g.setColor(orgColor);
         }
     }

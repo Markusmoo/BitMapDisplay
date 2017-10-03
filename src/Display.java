@@ -1,6 +1,11 @@
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.*;
 import java.util.ArrayList;
 
 /**TODO Change from EVEN number of columns to ODD number
@@ -33,19 +38,13 @@ public class Display extends JPanel implements Engine, MouseListener{
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setBounds(100,100,516,514);
         frame.setContentPane(this);
-        Tile.width = this.getWidth()/NUM_GRIDX;
-        Tile.height = this.getWidth()/NUM_GRIDY;
+        Map.gridWidth = this.getWidth()/NUM_GRIDX;
+        Map.gridHeight = this.getWidth()/NUM_GRIDY;
         this.setDoubleBuffered(true);
         this.addMouseListener(this);
 
         ready = true;
-        Timer t = new Timer(1000/60, new ActionListener(){
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                repaint();
-            }
-        });
+        Timer t = new Timer(1000/Engine.fps, e -> repaint());
         t.start();
         this.repaint();
     }
@@ -66,8 +65,8 @@ public class Display extends JPanel implements Engine, MouseListener{
     }
 
     public void paintGraphics(Graphics g){
-        Tile.width = this.getWidth()/NUM_GRIDX;
-        Tile.height = this.getHeight()/NUM_GRIDY;
+        Map.gridWidth = this.getWidth()/NUM_GRIDX;
+        Map.gridHeight = this.getHeight()/NUM_GRIDY;
         update();
         map.paint(g);
 
@@ -91,12 +90,29 @@ public class Display extends JPanel implements Engine, MouseListener{
         g.setColor(orgColor);
     }
 
+    public void saveMap(){
+        new File(System.getProperty("%APPDATA%")+"\\BitMapDisplay\\").mkdirs();
+        int numOf = 0;
+        for(String s : new File(System.getProperty("%APPDATA%")+"\\BitMapDisplay\\").list()){
+            if(s.contains("level")) numOf++;
+        }
+        try {
+            Writer writer = new OutputStreamWriter(new FileOutputStream(System.getProperty("%APPDATA%") + "\\BitMapDisplay\\level_" + numOf));
+            Gson gson = new GsonBuilder().setPrettyPrinting().excludeFieldsWithoutExposeAnnotation().create();
+            writer.write(gson.toJson(map));
+            writer.flush();
+            writer.close();
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+        System.out.println("save");
+    }
+
     @Override
     public void update() {
         if(paintMode > 0){
-            int selectedTileX = getMousePosition().x/Tile.width;
-            int selectedTileY = getMousePosition().y/Tile.height;
-            int selectedTile = map.getTile(selectedTileX, selectedTileY).type;
+            int selectedTileX = getMousePosition().x/Map.gridWidth;
+            int selectedTileY = getMousePosition().y/Map.gridHeight;
             switch (paintMode){
                 case(1): map.replaceTile(selectedTileX, selectedTileY, Tile.BLOCK); break;
                 case(3): map.replaceTile(selectedTileX, selectedTileY, Tile.OPEN); break;
@@ -112,8 +128,8 @@ public class Display extends JPanel implements Engine, MouseListener{
 
     @Override
     public void mousePressed(MouseEvent e) {
-        System.out.println(e.getButton());
         this.paintMode = e.getButton();
+        if(e.getButton() == 4) saveMap();
     }
 
     @Override
